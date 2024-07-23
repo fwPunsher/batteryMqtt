@@ -9,11 +9,12 @@ docker build -t battery-mqtt-client .
 Run using:
 ```
 docker run -d \
-  -e MQTT_BROKER="192.168.1.2" \
-  -e MQTT_PORT="1883" \
-  -e APP_CODE="ASGOFT" \
-  -e LOGIN_NAME="test@example.com" \
-  -e PASSWORD="YourPassword" \
+  -e MQTT_BROKER='192.168.1.2' \
+  -e MQTT_PORT='1883' \
+  -e DEVICE_ID='DEVICE ID FROM APP'
+  -e APP_CODE='ASGOFT' \
+  -e LOGIN_NAME='test@example.com' \
+  -e PASSWORD='YourPassword' \
   --name battery-mqtt-client battery-mqtt-client
 ```
 
@@ -61,6 +62,10 @@ This application can be configured through the following environment variables. 
 
 - **`PASSWORD`** (mandatory): 
   - **Description**: The password corresponding to the `LOGIN_NAME` for authentication purposes.
+  - **Default**: None (must be provided).
+
+- **`DEVICE_ID`** (mandatory): 
+  - **Description**: The ID of the device to be fetched. Is displayed in the A-Solar app.
   - **Default**: None (must be provided).
 
 

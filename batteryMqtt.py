@@ -28,7 +28,21 @@ token_credentials = {
     "loginName": login_name,
     "password": password
 }
+deviceId = get_env_variable('DEVICE_ID')
 
+# Logging the variables
+print(f"MQTT Broker: {broker}")
+print(f"MQTT Port: {port}")
+print(f"MQTT Topic: {topic}")
+print(f"WebSocket URI: {ws_uri}")
+print(f"Token URL: {token_url}")
+print(f"Heartbeat Interval: {heartbeat_interval}")
+print(f"Reconnect Delay: {reconnect_delay}")
+print(f"App Code: {app_code}")
+print(f"Login Name: {login_name}")
+print(f"Password: {password}")
+print(f"Token Credentials: {token_credentials}")
+print(f"Device ID: {deviceId}")
 
 
 # Authorization Token Fetch
@@ -54,13 +68,12 @@ def connect_mqtt():
 
 # Send Initial and Heartbeat Messages
 async def send_initial_and_heartbeat_messages(ws):
-    initial_message = json.dumps({"reportEquip": ["9105231027490694"]})
-    heartbeat_message = json.dumps({"heartbeat": ["9105231027490694"]})
-    if ws.open:
-        await ws.send(initial_message)
-        print(f"Sent initial message: {initial_message}")
+    initial_message = json.dumps({"reportEquip": [deviceId]})
+    heartbeat_message = json.dumps({"heartbeat": [deviceId]})
     while True:
         if ws.open:
+            await ws.send(initial_message)
+            print(f"Sent initial message: {initial_message}")
             await ws.send(heartbeat_message)
             print(f"Sent heartbeat message: {heartbeat_message}")
         else:
