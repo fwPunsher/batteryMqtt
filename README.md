@@ -55,6 +55,7 @@ This application can be configured through the following environment variables. 
 - **`APP_CODE`** (mandatory): 
   - **Description**: The application code used as part of the authentication process to fetch the token.
   - **Default**: `ASGOFT`.
+  - **Known Values**: `ASGOFT`, `Storcube`
 
 - **`LOGIN_NAME`** (mandatory): 
   - **Description**: The login name used in conjunction with `PASSWORD` for authentication purposes.
