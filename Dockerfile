@@ -18,7 +18,7 @@ COPY batteryMqtt.py .
 ENV PYTHONUNBUFFERED=1
 
 # Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir websockets paho-mqtt requests
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Run the script when the container launches
 CMD ["python", "./batteryMqtt.py"]
