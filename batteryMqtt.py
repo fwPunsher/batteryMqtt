@@ -16,34 +16,21 @@ def get_env_variable(var_name):
 broker = get_env_variable('MQTT_BROKER')
 port = int(os.getenv('MQTT_PORT', 1883))
 topic = os.getenv('MQTT_TOPIC', 'battery/reportEquip')
+username = os.getenv('MQTT_USERNAME', None)  # New username variable
+password = os.getenv('MQTT_PASSWORD', None)  # New password variable
 ws_uri = "ws://baterway.com:9501/equip/info/"
 token_url = "http://baterway.com/api/user/app/login"
 heartbeat_interval = int(os.getenv('HEARTBEAT_INTERVAL', 60))
 reconnect_delay = int(os.getenv('RECONNECT_DELAY', 60))
 app_code = os.getenv('APP_CODE', 'ASGOFT')
 login_name = get_env_variable('LOGIN_NAME')
-password = get_env_variable('PASSWORD')
+password_auth = get_env_variable('PASSWORD')
 token_credentials = {
     "appCode": app_code,
     "loginName": login_name,
-    "password": password
+    "password": password_auth
 }
 deviceId = get_env_variable('DEVICE_ID')
-
-# Logging the variables
-print(f"MQTT Broker: {broker}")
-print(f"MQTT Port: {port}")
-print(f"MQTT Topic: {topic}")
-print(f"WebSocket URI: {ws_uri}")
-print(f"Token URL: {token_url}")
-print(f"Heartbeat Interval: {heartbeat_interval}")
-print(f"Reconnect Delay: {reconnect_delay}")
-print(f"App Code: {app_code}")
-print(f"Login Name: {login_name}")
-print(f"Password: {password}")
-print(f"Token Credentials: {token_credentials}")
-print(f"Device ID: {deviceId}")
-
 
 # Authorization Token Fetch
 def get_auth_token():
@@ -58,13 +45,13 @@ def get_auth_token():
     else:
         raise Exception(f"HTTP error during token fetch: Status {response.status_code}")
 
-
 # MQTT Connection Setup
 def connect_mqtt():
-    client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION1)
+    client = mqtt_client.Client()  # Utilise la dernière version API MQTT
+    if username and password:  # If username and password are set, use them
+        client.username_pw_set(username, password)
     client.connect(broker, port)
     return client
-
 
 # Send Initial and Heartbeat Messages
 async def send_initial_and_heartbeat_messages(ws):
@@ -81,7 +68,6 @@ async def send_initial_and_heartbeat_messages(ws):
             break
         await asyncio.sleep(heartbeat_interval)
 
-
 # Main WebSocket and MQTT loop
 async def websocket_to_mqtt():
     client = connect_mqtt()
@@ -95,21 +81,18 @@ async def websocket_to_mqtt():
                 "content-type": "application/json",
                 "User-Agent": "okhttp/3.12.11"
             }
-            async with websockets.connect(uri, extra_headers=headers) as websocket:
-                # Start the message sending and receiving in parallel
+            async with websockets.connect(uri, extra_headers=list(headers.items())) as websocket:
                 consumer_task = asyncio.create_task(receive_messages(websocket, client))
                 producer_task = asyncio.create_task(send_initial_and_heartbeat_messages(websocket))
                 done, pending = await asyncio.wait(
                     [consumer_task, producer_task],
                     return_when=asyncio.FIRST_COMPLETED
                 )
-                # Handle task completion or cancellation
                 for task in pending:
                     task.cancel()
         except Exception as e:
             print(f"Error: {e}. Reconnecting in {reconnect_delay} seconds...")
             await asyncio.sleep(reconnect_delay)
-
 
 # Receive and handle messages from WebSocket
 async def receive_messages(websocket, mqtt_client):
@@ -124,10 +107,8 @@ async def receive_messages(websocket, mqtt_client):
     except websockets.exceptions.ConnectionClosed:
         print("WebSocket connection closed.")
 
-
 # Running the asyncio main function
 async def main():
     await websocket_to_mqtt()
-
 
 asyncio.run(main())
