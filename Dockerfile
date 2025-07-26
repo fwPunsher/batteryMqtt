@@ -13,6 +13,7 @@ ENV APP_CODE=ASGOFT
 
 # Copy the current directory contents into the container at /usr/src/app
 COPY batteryMqtt.py .
+COPY requirements.txt .
 
 # Set Python to run unbuffered
 ENV PYTHONUNBUFFERED=1
